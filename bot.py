@@ -30,48 +30,54 @@ async def support_message(client, message: Message):
 
     await add_user(message.from_user.id)
 
-    caption = (
-        f"📩 New Support Message\n\n"
-        f"👤 {message.from_user.first_name}\n"
-        f"🆔 `{message.from_user.id}`"
-    )
-
-    if message.text:
-        caption += f"\n\n💬 {message.text}"
-
-    await app.send_message(ADMIN_ID, caption)
-
-    if message.text:
-        await app.send_message(
-            ADMIN_ID,
-            f"/reply {message.from_user.id} "
-            f"{message.text}"
-        )
+    await message.forward(ADMIN_ID)
 
     await message.reply_text(
-        "✅ നിങ്ങളുടെ മെസ്സേജ് Admin-ലേക്ക് അയച്ചു."
+        "✅ നിങ്ങളുടെ മെസ്സേജ് Admin-ലേക്ക് അയച്ചിരിക്കുന്നു."
     )
-
-
-print("✅ Support Bot Started")
-@app.on_message(filters.command("reply") & filters.private)
-async def reply_user(client, message: Message):
+    @app.on_message(filters.private & filters.reply)
+async def admin_reply(client, message: Message):
     if message.from_user.id != ADMIN_ID:
         return
 
-    if len(message.command) < 3:
-        return await message.reply_text(
-            "Usage:\n/reply user_id message"
-        )
+    if not message.reply_to_message.forward_from:
+        return await message.reply_text("❌ User message-ന് reply ചെയ്യൂ.")
 
-    user_id = int(message.command[1])
-    reply_text = message.text.split(None, 2)[2]
+    user_id = message.reply_to_message.forward_from.id
 
     try:
-        await app.send_message(user_id, f"💬 Admin:\n\n{reply_text}")
+        if message.text:
+            await app.send_message(user_id, f"💬 Admin:\n\n{message.text}")
+        elif message.photo:
+            await app.send_photo(
+                user_id,
+                message.photo.file_id,
+                caption=message.caption or ""
+            )
+        elif message.document:
+            await app.send_document(
+                user_id,
+                message.document.file_id,
+                caption=message.caption or ""
+            )
+        elif message.video:
+            await app.send_video(
+                user_id,
+                message.video.file_id,
+                caption=message.caption or ""
+            )
+
         await message.reply_text("✅ Reply sent.")
+
     except Exception as e:
         await message.reply_text(f"❌ {e}")
+        @app.on_message(filters.command("stats") & filters.private)
+async def stats(client, message: Message):
+    if message.from_user.id != ADMIN_ID:
+        return
+
+    total = await get_user_count()
+    await message.reply_text(f"👥 Total Users: {total}")
 
 
 @app.on_message(filters.command("broadcast") & filters.private)
@@ -81,7 +87,7 @@ async def broadcast(client, message: Message):
 
     if len(message.command) < 2:
         return await message.reply_text(
-            "Usage:\n/broadcast message"
+            "Usage:\n/broadcast Your message"
         )
 
     text = message.text.split(None, 1)[1]
@@ -98,18 +104,9 @@ async def broadcast(client, message: Message):
             pass
 
     await message.reply_text(
-        f"✅ Broadcast completed.\nSent: {sent}"
+        f"✅ Broadcast completed.\n\nSent: {sent}"
     )
 
 
-@app.on_message(filters.command("stats") & filters.private)
-async def stats(client, message: Message):
-    if message.from_user.id != ADMIN_ID:
-        return
-
-    total = await get_user_count()
-
-    await message.reply_text(
-        f"👥 Total Users: {total}"
-    )
+print("✅ Support Bot Started")
 app.run()
