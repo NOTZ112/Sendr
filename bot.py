@@ -17,7 +17,22 @@ async def start(client, message: Message):
         "👋 Welcome!\n\n"
         "Support Bot Ready ✅"
     )
+from config import ADMIN_ID
 
+@app.on_message(filters.private & ~filters.command("start"))
+async def forward_to_admin(client, message: Message):
+    if message.from_user.id == ADMIN_ID:
+        return
+
+    await client.forward_messages(
+        chat_id=ADMIN_ID,
+        from_chat_id=message.chat.id,
+        message_ids=message.id
+    )
+
+    await message.reply_text(
+        "✅ നിങ്ങളുടെ മെസ്സേജ് Admin-ലേക്ക് അയച്ചിരിക്കുന്നു."
+    )
 
 print("✅ Support Bot Started")
 app.run()
