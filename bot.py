@@ -31,11 +31,11 @@ async def support_message(client, message: Message):
     await add_user(message.from_user.id)
 
     await message.forward(ADMIN_ID)
+await message.reply_text(
+    "✅ നിങ്ങളുടെ മെസ്സേജ് Admin-ലേക്ക് അയച്ചിരിക്കുന്നു."
+)
 
-    await message.reply_text(
-        "✅ നിങ്ങളുടെ മെസ്സേജ് Admin-ലേക്ക് അയച്ചിരിക്കുന്നു."
-    )
-    @app.on_message(filters.private & filters.reply)
+@app.on_message(filters.private & filters.reply)
 async def admin_reply(client, message: Message):
     if message.from_user.id != ADMIN_ID:
         return
@@ -70,8 +70,9 @@ async def admin_reply(client, message: Message):
         await message.reply_text("✅ Reply sent.")
 
     except Exception as e:
-        await message.reply_text(f"❌ {e}")
-        @app.on_message(filters.command("stats") & filters.private)
+    await message.reply_text(f"❌ {e}")
+
+@app.on_message(filters.command("stats") & filters.private)
 async def stats(client, message: Message):
     if message.from_user.id != ADMIN_ID:
         return
