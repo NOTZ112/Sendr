@@ -35,6 +35,6 @@ async def forward_to_admin(client, message: Message):
         "✅ നിങ്ങളുടെ മെസ്സേജ് Admin-ലേക്ക് അയച്ചിരിക്കുന്നു."
     )
 
-print("✅ Starting Support Bot...")
-app.run()
-print("❌ app.run() returned")
+if __name__ == "__main__":
+    print("✅ Starting Support Bot...")
+    app.run()
