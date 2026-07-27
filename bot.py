@@ -54,4 +54,62 @@ async def support_message(client, message: Message):
 
 
 print("✅ Support Bot Started")
+@app.on_message(filters.command("reply") & filters.private)
+async def reply_user(client, message: Message):
+    if message.from_user.id != ADMIN_ID:
+        return
+
+    if len(message.command) < 3:
+        return await message.reply_text(
+            "Usage:\n/reply user_id message"
+        )
+
+    user_id = int(message.command[1])
+    reply_text = message.text.split(None, 2)[2]
+
+    try:
+        await app.send_message(user_id, f"💬 Admin:\n\n{reply_text}")
+        await message.reply_text("✅ Reply sent.")
+    except Exception as e:
+        await message.reply_text(f"❌ {e}")
+
+
+@app.on_message(filters.command("broadcast") & filters.private)
+async def broadcast(client, message: Message):
+    if message.from_user.id != ADMIN_ID:
+        return
+
+    if len(message.command) < 2:
+        return await message.reply_text(
+            "Usage:\n/broadcast message"
+        )
+
+    text = message.text.split(None, 1)[1]
+
+    users = await get_users()
+
+    sent = 0
+
+    for user in users:
+        try:
+            await app.send_message(user, text)
+            sent += 1
+        except:
+            pass
+
+    await message.reply_text(
+        f"✅ Broadcast completed.\nSent: {sent}"
+    )
+
+
+@app.on_message(filters.command("stats") & filters.private)
+async def stats(client, message: Message):
+    if message.from_user.id != ADMIN_ID:
+        return
+
+    total = await get_user_count()
+
+    await message.reply_text(
+        f"👥 Total Users: {total}"
+    )
 app.run()
