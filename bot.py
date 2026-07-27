@@ -1,7 +1,7 @@
 from pyrogram import Client, filters
 from pyrogram.types import Message
 
-from config import API_ID, API_HASH, BOT_TOKEN
+from config import API_ID, API_HASH, BOT_TOKEN, ADMIN_ID
 
 app = Client(
     "SupportBot",
@@ -17,7 +17,7 @@ async def start(client, message: Message):
         "👋 Welcome!\n\n"
         "Support Bot Ready ✅"
     )
-from config import ADMIN_ID
+
 
 @app.on_message(filters.private & ~filters.command("start"))
 async def forward_to_admin(client, message: Message):
